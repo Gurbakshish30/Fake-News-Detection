@@ -1,0 +1,48 @@
+import numpy as np
+import pickle
+from sklearn.metrics.pairwise import cosine_similarity
+from util import FNCData, pipeline_test
+
+with open('logistic_regression_model.pkl', 'rb') as f:
+    model = pickle.load(f)
+
+with open('bow_vectorizer.pkl', 'rb') as f:
+    bow_vectorizer = pickle.load(f)
+
+with open('tfreq_vectorizer.pkl', 'rb') as f:
+    tfreq_vectorizer = pickle.load(f)
+
+with open('tfidf_vectorizer.pkl', 'rb') as f:
+    tfidf_vectorizer = pickle.load(f)
+
+# Function to predict the stance of the given headline and body
+def predict_stance(headline, body):
+    # Prepare the feature vector for prediction
+    bow_head = bow_vectorizer.transform([headline]).toarray()
+    tfreq_head = tfreq_vectorizer.transform(bow_head).toarray()[0].reshape(1, -1)
+    tfidf_head = tfidf_vectorizer.transform([headline]).toarray().reshape(1, -1)
+    
+    bow_body = bow_vectorizer.transform([body]).toarray()
+    tfreq_body = tfreq_vectorizer.transform(bow_body).toarray()[0].reshape(1, -1)
+    tfidf_body = tfidf_vectorizer.transform([body]).toarray().reshape(1, -1)
+    
+    # Compute cosine similarity between headline and body
+    cosine_sim = cosine_similarity(tfidf_head, tfidf_body)[0].reshape(1, 1)
+    
+    # Combine the feature vectors
+    feature_vector = np.squeeze(np.c_[tfreq_head, tfreq_body, cosine_sim])
+
+    # Predict stance using the trained model
+    stance_prediction = model.predict([feature_vector])
+    
+    return stance_prediction[0]
+
+# Take input from the user
+print("Enter the claim details to predict the stance.")
+headline = input("Enter the headline of the claim: ")
+body = input("Enter the body of the claim (or press Enter to skip): ")
+
+# Predict stance
+predicted_stance = predict_stance(headline, body)
+stances = ['agree', 'disagree', 'discuss', 'unrelated']
+print(f"The predicted stance for the headline is: {stances[predicted_stance]}")
