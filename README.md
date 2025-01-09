@@ -80,6 +80,9 @@ npm run dev
 - **Tools:** TensorFlow, React, Node.js, and TailwindCSS.
 
 
+#Collaborators
+-Anuj Arodia
+  Github : https://github.com/Anuj-Arodia
 
 
 
